@@ -1,7 +1,7 @@
-pragma solidity 0.8.20;
+pragma solidity 0.8.18;
 
 contract ERC721{
-    //Variable
+    //Variables
     //renvoi le nombre de token que contient une adresse
     mapping (address => uint256) private balance;
     //renvoi l'adresse du proprietaire d toke
@@ -39,6 +39,7 @@ contract ERC721{
         require(_to != address(0));
         
         delete owner[_tokenID];
+        balance[_from] -= 1;
         owner[_tokenID] = _to;
         emit Transfer(_from, _to, _tokenID);
     }
@@ -50,6 +51,7 @@ contract ERC721{
         require(_to != address(0));
 
         delete owner[_tokenID];
+        balance[_from] -= 1;
         owner[_tokenID] = _to;
         emit Transfer(_from, _to, _tokenID);
     }
@@ -61,6 +63,7 @@ contract ERC721{
         require(_to != address(0));
 
         delete owner[_tokenID];
+        balance[_from] -= 1;
         owner[_tokenID] = _to;
         emit Transfer(_from, _to, _tokenID);       
     }
@@ -68,7 +71,7 @@ contract ERC721{
     // Cette fonction permet a une adresse tiers d'etre affirmer pour la gestion d'un token 
     function approve(address _approved, uint _tokenID) external {
         require(msg.sender == owner[_tokenID], "C'est pas la bonne adresse");
-        require(totalApprovals[_tokenID] != address(0), "Cette adresse detient deja ce token");
+        require(_approved != totalApprovals[_tokenID], "Cette adresse detient deja ce token");
         require(_approved != address(0));
 
         totalApprovals[_tokenID] = _approved;
@@ -78,6 +81,7 @@ contract ERC721{
     //Cette fonction permet a un operateur d'etre approver entre true/false
     function setApprovalForAll(address _operator, bool _approved) external {
         require(_operator != address(0));
+        require(msg.sender != _operator);
         
         opperatorApprovals[msg.sender][_operator] = _approved;
         emit ApprovalForAll(msg.sender, _operator, _approved);
@@ -97,5 +101,14 @@ contract ERC721{
         require(_operator != address(0));
         require(opperatorApprovals[_owner][_operator], "Cet addresse n'est pas autoriser");
         return opperatorApprovals[_owner][_operator];
+    }
+
+    //Fonction pour l'emission de nouveaux token
+    function _mint(uint _tokenID, address _to) internal{
+        require(owner[_tokenID] == address(0));
+        require(_to != address(0));
+        owner[_tokenID] = _to;
+        balance[_to] +=1;
+        emit Transfer(address(0),_to, _tokenID);
     }
 }
