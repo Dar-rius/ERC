@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity 0.8.19;
+
+interface IERC165{
+
+    function supportsInterface(bytes4 interfaceId) external view returns(bool);
+}
+
+contract ERC165 {
+    function supprortsInterface(bytes4 interfaceId) external pure returns(bool){
+        return interfaceId == type(IERC165).interfaceId;
+    }
+}

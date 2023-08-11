@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.18;
 
-contract ERC721{
+import {ERC721Metadata} from './ERC721Metadata.sol';
+import {Strings} from '@openzeppelin/contracts/utils/Strings.sol';
+import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+
+
+contract ERC721 is ERC721Metadata{
     // Declaration des variables
-    uint256 totalSupply;
-    string name;
-    string symbol;
+    uint256 totalSupplies = 10;
+    string _name = "Ether";
+    string _symbol = "ETH";
 
     mapping(uint256 => address) private owner;
     mapping (address => uint256) private balance;
@@ -17,8 +22,29 @@ contract ERC721{
     event Approval(address indexed _owner, address indexed _spender, uint256 indexed _tokenID);
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
     
-    function totalSupplies() external view returns(uint){
-        return totalSupply;
+    function supportsInterface(bytes4 interfaceId) external pure returns(bool){
+        return interfaceId == type(ERC721Metadata).interfaceId;
+    }
+
+    function _checkbytesInterface() external pure returns(bytes4){
+        return type(ERC721Metadata).interfaceId;
+    }
+    
+    function totalSupply() external view returns(uint){
+        return totalSupplies;
+    }
+  
+    function name() external view returns(string memory){
+        return _name;
+    }
+    
+    function symbol() external view returns(string memory){
+        return _symbol;
+    }
+    
+    function tokenURI(uint256 _tokenID) external pure returns(string memory){
+        string memory baseURI ='';
+        return bytes(baseURI).length != 0 ? string.concat(baseURI, Strings.toString(_tokenID) ) : "";
     }
 
     function balanceOf(address account) external view returns(uint256){
@@ -36,6 +62,7 @@ contract ERC721{
         require(_to != address(0));
         require(_tokenExist(_tokenID));
         require(owner[_tokenID] == _from);
+        
         
         delete owner[_tokenID];
         balance[_from] -= 1;
@@ -124,4 +151,3 @@ contract ERC721{
             } 
     }
 }
-
