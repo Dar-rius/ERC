@@ -6,7 +6,7 @@ import './IERC1155TokenReceiver.sol';
 import './common.sol';
 
 
-abstract contract ERC1155 is ERC1055TokenReceiver, CommonConstant{
+contract ERC1155 is CommonConstant{
     using Address for address;
 
     //Les varibales
@@ -17,22 +17,34 @@ abstract contract ERC1155 is ERC1055TokenReceiver, CommonConstant{
     event TransferBacth(address indexed _operator, address indexed _from, address indexed _to, uint256[] _ids, uint256[] _values);
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool approved);
 
+    function supportInterface(bytes4 interfaceId) external pure returns(bool) { 
+        if(interfaceId == InterfaceSignatureERC165 ||
+            interfaceId == InterfaceSignatureERC1155){
+                return true;
+            }
+        return false;
+    }
+    
+    function _mint(uint256 _id, uint256 _value, address _winner) external{
+        balance[_id][_winner] += _value;
+    }
+
     function safeTransfertFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external {
-        require(_from != msg.sender && approved[_from][msg.sender]);
-        require(_to == address(0x0));
+        require(_from != msg.sender && approved[_from][msg.sender], "Adresse non approuve");
+        require(_to != address(0x0), "Pas bon");
 
         balance[_id][_from] -= _value;
         balance[_id][_to] += _value;
         emit TransferSingle(msg.sender, _from, _to, _id, _value);
         
-        if (Address.isContract(_to)){
+        if (_to.isContract()){
             _acceptReceiver(msg.sender, _from, _to, _id, _value, _data);
         }
     }
 
     function safeTransferBatchFrom(address _from, address _to, uint256[] calldata _ids, uint256[] calldata _values, bytes calldata _data) external{
         require(_from !=msg.sender && approved[_from][msg.sender]);
-        require(_to == address(0x0));
+        require(_to != address(0x0));
         require(_ids.length == _values.length);
         
         for (uint256 i = 0; i <_ids.length; i++){
@@ -42,7 +54,7 @@ abstract contract ERC1155 is ERC1055TokenReceiver, CommonConstant{
 
         emit TransferBacth(msg.sender, _from, _to, _ids, _values);
         
-        if (Address.isContract(_to)){
+        if (_to.isContract()){
             _acceptBatchReceiver(msg.sender, _from, _to, _ids, _values, _data);
         }
     }
@@ -74,10 +86,10 @@ abstract contract ERC1155 is ERC1055TokenReceiver, CommonConstant{
     
 
     function _acceptReceiver(address _operator, address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) internal{
-        require(ERC1055TokenReceiver(_to).onERC1155Receiver(_operator, _from, _id, _value, _data) == ERC1155_ACCEPTED, "Error receiver don't accpeted");
+        require(ERC1155TokenReceiver(_to).onERC1155Receiver(_operator, _from, _id, _value, _data) == ERC1155_ACCEPTED, "Error receiver don't accpeted");
     }
 
     function _acceptBatchReceiver(address _operator, address _from, address _to, uint256[] calldata _ids, uint256[] calldata _values, bytes calldata _data) internal{
-        require(ERC1055TokenReceiver(_to).onERC1155BatchReceiver(_operator, _from, _ids, _values, _data) == ERC1155_BATCH_ACCEPTED, "Error receiver don't accpeted"); 
+        require(ERC1155TokenReceiver(_to).onERC1155BatchReceiver(_operator, _from, _ids, _values, _data) == ERC1155_BATCH_ACCEPTED, "Error receiver don't accpeted"); 
     }
 }
