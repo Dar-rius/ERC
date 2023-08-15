@@ -4,7 +4,7 @@ pragma solidity 0.8.19;
 import "./IERC1155TokenReceiver.sol";
 import "./common.sol";
 
-abstract contract ERC1155MockReceiver is ERC1155TokenReceiver, CommonConstant{
+contract ERC1155MockReceiver is ERC1155TokenReceiver, CommonConstant{
     bool shoulSend;
 
     address _lastOperator;

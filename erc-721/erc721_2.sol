@@ -26,7 +26,7 @@ contract ERC721 is ERC721Metadata{
         return interfaceId == type(ERC721Metadata).interfaceId;
     }
 
-    function _checkbytesInterface() external pure returns(bytes4){
+    function _checkBytesInterface() external pure returns(bytes4){
         return type(ERC721Metadata).interfaceId;
     }
     
@@ -126,6 +126,25 @@ contract ERC721 is ERC721Metadata{
         require(totalApprovals[_tokenID] != address(0));
 
         return totalApprovals[_tokenID];
+    }
+
+    //Autres fonction
+    function _mintTokenId(address _to, uint256 _tokenId) internal returns(bool) {
+        require(!_tokenExist(_tokenId));
+        totalSupply += 1;
+        balance[_to] += 1;
+        owner[_tokenId] = _to; 
+        emit Transfer(address(0), _to, _tokenID);
+        return true;
+    }
+
+    function _burnTokenId(address _from, uint256 tokenID) internal {
+        require(_tokenExist(_tokenId));
+        totalSupply -= 1;
+        balance[_from] -= 1;
+        delete owner[_tokenId] = _to; 
+        emit Transfer(_from, address(0), _tokenID);
+        return true;
     }
 
     // Les permissions pour les droits

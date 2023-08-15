@@ -24,10 +24,6 @@ contract ERC1155 is CommonConstant{
             }
         return false;
     }
-    
-    function _mint(uint256 _id, uint256 _value, address _winner) external{
-        balance[_id][_winner] += _value;
-    }
 
     function safeTransfertFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external {
         require(_from != msg.sender && approved[_from][msg.sender], "Adresse non approuve");
@@ -84,6 +80,43 @@ contract ERC1155 is CommonConstant{
         return approved[_owner][_operator];
     }
     
+    function _mint(address _to, uint256 _id, uint256 _amount) internal returns(bool){
+        require(_to != address(0));
+
+        balance[_id][_to] = _amount;
+        emit TransferSingle(msg.sender, address(0), _to, _id, _amount);
+        return true;
+    }
+    
+    function _mintBacth(address _to, uint256[] memory _id, uint256[] memory _amount) internal returns(bool){
+        require(_to != address(0));
+        require(_id.length == _amount.length);
+
+        for (uint256 i = 0; i<_id.length; i++){
+            balance[_id[i]][_to] = _amount[i];
+        }
+        emit TransferBacth(msg.sender, address(0), _to, _id, _amount);
+        return true;
+    }
+
+    function _burn(address _from, uint256 _id, uint256 _amount) internal returns(bool){
+        require(_from != address(0));
+
+        delete balance[_id][_from];
+        emit TransferSingle(msg.sender, _from, address(0), _id, _amount);
+        return true;
+    }
+
+    function _burnBacth(address _from, uint256[] memory _id, uint256[] memory _amount) internal returns(bool){
+        require(_from != address(0));
+        require(_id.length == _amount.length);
+
+        for (uint256 i = 0; i<_id.length; i++){
+            balance[_id[i]][_from] -= _amount[i];
+        }
+        emit TransferBacth(msg.sender, _from, address(0), _id, _amount);
+        return true;
+    }
 
     function _acceptReceiver(address _operator, address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) internal{
         require(ERC1155TokenReceiver(_to).onERC1155Receiver(_operator, _from, _id, _value, _data) == ERC1155_ACCEPTED, "Error receiver don't accpeted");
